@@ -3,3 +3,4 @@ venv
 migrations
 .env
 __pycache__
+.prettierignore

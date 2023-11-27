@@ -1,0 +1,50 @@
+<amp-sidebar id="sidebar-left" class="sample-sidebar contrast" layout="nodisplay" side="left">
+    <aside>
+      <nav>
+        <ul>
+        <button on="tap:sidebar-left.close" aria-label="Open menu">
+          <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="16px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18">
+            </line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        </ul>
+        <ul>
+          <li>
+            <h3>Menu</h3>
+            <details>
+                <summary style="margin-bottom: 20px;">Categorias</summary>
+                <li><a href="{% url 'listarCategorias' %}">Listar</a></li>
+                <li><a href="{% url 'criarCategoria' %}">Criar</a></li>
+            </details>
+            <br>
+            <details>
+                <summary style="margin-bottom: 20px;">Produtos</summary>
+                <li><a href="{% url 'listarProdutos' %}">Listar</a></li>
+                <li><a href="{% url 'criarProduto' %}">Criar</a></li>
+            </details>
+            <br>
+            <details>
+                <summary style="margin-bottom: 20px;">Clientes</summary>
+                <li><a href="{% url 'listarClientes' %}">Listar</a></li>
+                <li><a href="{% url 'criarCliente' %}">Criar</a></li>
+            </details>
+            <br>
+            <details>
+                <summary style="margin-bottom: 20px;">Vendedores</summary>
+                <li><a href="{% url 'listarVendedores' %}">Listar</a></li>
+                <li><a href="{% url 'criarVendedor' %}">Criar</a></li>
+            </details>
+            <br>
+            <details>
+                <summary style="margin-bottom: 20px;">Compras</summary>
+                <li><a href="{% url 'listarCompras' %}">Listar</a></li>
+                <li><a href="{% url 'criarCompra' %}">Criar</a></li>
+            </details>
+        </li>
+            
+        </ul>
+      </nav>
+    </aside>
+  </amp-sidebar>

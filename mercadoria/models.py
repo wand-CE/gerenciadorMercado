@@ -62,6 +62,9 @@ class Cliente(Pessoa):
     def __str__(self):
         return self.nome
 
+    def get_fields_dict(self):
+        return {field.name: getattr(self, field.name) for field in self._meta.fields}
+
 
 class Vendedor(Pessoa):
     class Meta:
@@ -70,6 +73,9 @@ class Vendedor(Pessoa):
 
     def __str__(self):
         return self.nome
+
+    def get_fields_dict(self):
+        return {field.name: getattr(self, field.name) for field in self._meta.fields}
 
 
 class Compra(models.Model):
@@ -92,6 +98,9 @@ class Compra(models.Model):
         items = self.item_compra.all()
         for item_compra in items:
             print(item_compra)
+
+    def get_fields_dict(self):
+        return {field.name: getattr(self, field.name) for field in self._meta.fields}
 
 
 class ItemCompra(models.Model):

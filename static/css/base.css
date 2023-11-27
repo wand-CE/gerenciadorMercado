@@ -1,11 +1,13 @@
-article{
-    width: 70%;
-    height: 50%;
-    margin: 30px auto 0 auto;
+article {
+  margin: 30px auto 0 auto;
 }
 
 #sunMoonSvg {
-    width: var(--font-size);
-    height: var(--font-size);
-    color: var(--contrast);
+  width: var(--font-size);
+  height: var(--font-size);
+  color: var(--contrast);
+}
+
+#theme_switcher {
+  cursor: pointer;
 }

@@ -7,34 +7,30 @@
     <title>{% block titulo %}{% endblock titulo %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <!-- AMP runtime -->
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+
+    <!-- AMP components -->
+    <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
     {% block extra_head %}
     {% endblock extra_head %}
+    <style amp-custom>
+    @charset "UTF-8";
+      /*!
+      * Pico CSS v1.5.8 (https://picocss.com)
+      * Copyright 2019-2023 - Licensed under MIT
+      */
+      amp-sidebar{position:relative;padding:1rem;background-color:var(--contrast);box-shadow:var(--card-box-shadow)}amp-sidebar button{position:absolute;top:var(--spacing);right:var(--spacing);width:1.5rem;height:1.5rem;border-radius:2rem;line-height:1}amp-sidebar aside{min-width:12rem;margin-top:var(--typography-spacing-vertical)}amp-sidebar a,amp-sidebar a:active,amp-sidebar a:focus,amp-sidebar a:hover,amp-sidebar h3{color:var(--contrast-inverse)}amp-sidebar svg,body>nav svg{height:1rem}
+      details summary:focus:not([role=button]), details summary {color: var(--contrast-inverse) !important;}
+      
+       nav button, nav button:active, nav button:focus, nav button:hover {margin:0;padding:0;outline:0;background-color:transparent;color: var(--contrast-inverse); border: none; --box-shadow:none;}
+    </style>
   </head>
   <body>
+    {% include 'includes/menu.html' %}
     <main class="container">
-      <nav>
-        <ul>
-          <li><a href="{% url 'home' %}" class="contrast"><strong>Mercado</strong></a></li>
-        </ul>
-        <ul>
-            <li role="list" dir="rtl">
-                <a href="#" aria-haspopup="listbox">Categorias</a>
-                <ul role="listbox">
-                    <li><a href="{% url 'listarCategorias' %}">Listar</a></li>
-                    <li><a href="{% url 'criarCategoria' %}">Criar</a></li>
-                </ul>
-            </li>
-            <li role="list" dir="rtl">
-                <a href="#" aria-haspopup="listbox">Produtos</a>
-                <ul role="listbox">
-                  <li><a href="{% url 'listarProdutos' %}">Listar</a></li>
-                    <li><a href="{% url 'criarProduto' %}">Criar</a></li>
-                </ul>
-            </li>
-            <li><a href="#" id="theme_switcher" data-tooltip="theme dark"></a></li>
-          
-        </ul>
-      </nav>
+      {% include 'includes/header.html' %}
+      
       {% block conteudo %}{% endblock conteudo %}
     </main>
     <script>
