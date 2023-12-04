@@ -1,4 +1,7 @@
+from datetime import date
+
 from django import forms
+from django.core.exceptions import ValidationError
 
 from mercadoria.models import Categoria, Produto, Cliente, Vendedor, Compra
 
@@ -16,9 +19,26 @@ class ProdutoForm(forms.ModelForm):
 
 
 class ClienteForm(forms.ModelForm):
+    nascimento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = Cliente
         fields = '__all__'
+
+    def clean(self):
+        errors = {}
+        data = super().clean()
+        try:
+            int(data['cpf'])
+        except ValueError:
+            errors['cpf'] = 'CPF deve possuir apenas números'
+
+        hoje = date.today()
+        if data['nascimento'] >= hoje:
+            errors['nascimento'] = 'Data deve ser antiga'
+        if len(errors.values()):
+            raise ValidationError(errors)
+        return data
 
 
 class VendedorForm(forms.ModelForm):
@@ -28,24 +48,6 @@ class VendedorForm(forms.ModelForm):
 
 
 class CompraForm(forms.ModelForm):
-    produtos = [(produto.id, f"{produto.nome} - Estoque: {produto.quantidade_estoque}") for produto in
-                Produto.objects.all()]
-
-    produto_quantidade = forms.ChoiceField(
-        choices=produtos,
-        widget=forms.CheckboxSelectMultiple(attrs={'class': 'selecione-produto'}),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(CompraForm, self).__init__(*args, **kwargs)
-
-        for produto in Produto.objects.all():
-            self.fields[f'quantidades_{produto.nome}'] = forms.IntegerField(
-                min_value=0,
-                widget=forms.NumberInput(attrs={'class': 'selecione-quantidade'}),
-                required=False,
-            )
-
     class Meta:
         model = Compra
         fields = '__all__'

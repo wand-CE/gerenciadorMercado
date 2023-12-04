@@ -3,6 +3,12 @@
 {% block title %}{{ nome_pagina }}{% endblock title %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/createObject.css' %}">
+<style>
+#modal-cliente form{
+    margin: 0 5% 0 5%;
+}
+
+</style>
 {% endblock extra_head %}
 
 {% block conteudo %}
@@ -10,10 +16,149 @@
     <h1>{{ nome_pagina }}</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form }}
+        {% for field in form %}
+        {{ field.label }}
+        {% if field.label == 'Cliente' %}
+        <div>
+            {{ field }}
+            <div id="addCliente" style="cursor:pointer; color:blue;" onclick="closeOpenModalCliente()">
+                adicionar cliente
+            </div>
+        </div>
+        <br>
+        {% else %}
+        {{ field }}
+        {% endif %}
+        {% endfor %}
+        <label for="table_produtos">Produtos:</label>
+        <input type="search" placeholder="Pesquise produtos" aria-label="Search"/>
+        <table role="grid">
+            <thead>
+
+            <tr>
+                
+                <th>Produto</th>
+                <th>Categoria</th>                
+                <th>Preço</th>
+                <th>Quantidade</th>
+                <th>Total</th>                
+                <th>#</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Maçã</td>
+                <td>Frutas</td>
+                <td>R$5,15</td>
+                <td><input type="number" minlength="1" style="width: 120px;"></td>
+                <td>R$25,75</td>
+                <td>Excluir</td>
+                
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+        
         <input type="submit" value="Salvar" class="secondary">
         <a href="{% url 'home' %}" role="button" class="contrast cancelButton">Cancelar</a>
     </form>
 </article>
 
+<dialog id="modal-cliente">
+  <article class="container">
+    <a class="close" style="cursor: pointer; margin-right: 2%;" onclick="closeOpenModalCliente()">
+    </a>    
+    <form id="addClienteForm">
+        <h3>Registrar Cliente</h3>
+        <br>
+        {% csrf_token %}
+        {{ cliente_form }}
+        <footer>
+        <button type="submit" data-target="modal-example">
+            Registrar
+        </button>
+        <button class="secondary" data-target="modal-example" onClick="closeOpenModalCliente()">
+            Cancelar
+        </button>        
+        </footer>
+    </form>
+  </article>
+</dialog>
 {% endblock conteudo %}
+{% block extra_body %}
+<script>
+    let modalCliente = document.querySelector("#modal-cliente");
+
+    function closeOpenModalCliente() {
+        modalCliente.toggleAttribute('open');
+    }
+
+    let clienteSelect = document.querySelector('#id_cliente');
+
+    let formCliente = document.getElementById('addClienteForm')
+
+    formCliente.addEventListener('submit', function(event) {
+            event.preventDefault();            
+
+            const formData = new FormData(formCliente);
+
+            fetch("{% url 'clienteByJson' %}", {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.errors){
+                    let opcao = document.createElement('option');
+                    opcao.value = data.cliente_id;
+                    opcao.textContent = data.nome;
+
+                    clienteSelect.appendChild(opcao);
+                    clienteSelect.value = opcao.value;
+
+                    closeOpenModalCliente();
+                    formCliente.reset()
+                    formCliente.querySelectorAll('.errorlist').forEach(item => item.innerHTML = '');
+                }else{
+                    formCliente.querySelectorAll('.errorlist').forEach(item => item.innerHTML = '');
+                    for (const field in data.errors) {
+                        if (data.errors.hasOwnProperty(field)) {
+                            let element = formCliente.querySelector(`[name=${field}]`);
+                            
+                            const errorMessages = data.errors[field];
+
+                            let errorList = formCliente.querySelector(`.errors_${field}`)
+
+                            if (!errorList){
+                                let error = document.createElement('ul');
+                                error.className = `errorlist errors_${field}`
+                                formCliente.insertBefore(error, element);
+
+                                errorList = error;
+
+                            } else {
+                                errorList.innerHTML = '';
+                                console.log(errorList);
+                            }
+
+                            errorMessages.forEach(errorMessage => {
+                                let error = document.createElement('li');                               
+
+                                error.textContent = errorMessage;
+                                errorList.appendChild(error);
+                            });
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    
+
+
+</script>
+{% endblock extra_body %}

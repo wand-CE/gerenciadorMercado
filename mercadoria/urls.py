@@ -30,4 +30,6 @@ urlpatterns = [
     path('listarCompras/', views.ListCompra.as_view(), name='listarCompras'),
     path('editarCompra/<pk>', views.EditCompra.as_view(), name='editarCompra'),
     path('excluirCompra/<pk>', views.ExcludeCompra.as_view(), name='excluirCompra'),
+
+    path('criarClienteJson/', views.CreateClienteJson.as_view(), name='clienteByJson'),
 ]

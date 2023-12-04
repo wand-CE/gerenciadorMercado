@@ -7,9 +7,9 @@
     <title>{% block titulo %}{% endblock titulo %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
     <!-- AMP runtime -->
     <script async src="https://cdn.ampproject.org/v0.js"></script>
-
     <!-- AMP components -->
     <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
     {% block extra_head %}
@@ -24,6 +24,8 @@
       details summary:focus:not([role=button]), details summary {color: var(--contrast-inverse) !important;}
       
        nav button, nav button:active, nav button:focus, nav button:hover {margin:0;padding:0;outline:0;background-color:transparent;color: var(--contrast-inverse); border: none; --box-shadow:none;}
+       .errorlist{color: red}
+       .errorlist li{list-style: none !important;}
     </style>
   </head>
   <body>

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.core.validators import MinLengthValidator, MinValueValidator, RegexValidator
 from django.db import models
 
@@ -25,7 +27,8 @@ class Produto(models.Model):
     nome = models.CharField(max_length=100, null=False, unique=True)
     preco = models.DecimalField(max_digits=5, decimal_places=2, null=False, default=0.00,
                                 validators=[MinValueValidator(0.00)])
-    quantidade_estoque = models.IntegerField(null=False, default=0, verbose_name='Quantidade em Estoque')
+    quantidade_estoque = models.IntegerField(
+        null=False, default=0, verbose_name='Quantidade em Estoque')
     categoria = models.ForeignKey(
         Categoria, on_delete=models.SET_NULL, null=True)
 
@@ -45,7 +48,7 @@ class Pessoa(models.Model):
     cpf = models.CharField(null=False, unique=True,
                            validators=[MinLengthValidator(11), RegexValidator(r'^\d{11}$',
                                                                               'CPF inválido')],
-                           max_length=11)
+                           verbose_name='CPF', max_length=11)
     nome = models.CharField(max_length=60, null=False)
     endereco = models.CharField(max_length=150, null=False)
     nascimento = models.DateField(null=False)
@@ -83,7 +86,8 @@ class Compra(models.Model):
         Vendedor, on_delete=models.SET_NULL, null=True)
     # depois sera mudado para adicionar vendedor automaticamente com base no vendedor conectado
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True)
-    horaCompra = models.DateTimeField(auto_now_add=True, null=False)
+    horaCompra = models.DateTimeField(
+        auto_now_add=True, null=False, verbose_name='Hora da compra')
 
     # valorTotal = models.DecimalField(max_digits=7, decimal_places=2, null=False, validators=[MinValueValidator(0.00)])
 
@@ -96,8 +100,10 @@ class Compra(models.Model):
 
     def valor_total(self):
         items = self.item_compra.all()
+        soma = Decimal('0.00')
         for item_compra in items:
-            print(item_compra)
+            soma += item_compra.precoTotal
+        return soma
 
     def get_fields_dict(self):
         return {field.name: getattr(self, field.name) for field in self._meta.fields}

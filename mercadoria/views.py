@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, CreateView, ListView, DeleteView, UpdateView
@@ -45,7 +45,7 @@ class CreateCategory(ConfiguracoesMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['nome_pagina'] = "Criar Categoria"
+        context['nome_pagina'] = "Registrar Categoria"
         return context
 
 
@@ -96,7 +96,7 @@ class CreateProduto(ConfiguracoesMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['nome_pagina'] = "Criar Produto"
+        context['nome_pagina'] = "Registrar Produto"
         return context
 
 
@@ -145,7 +145,7 @@ class CreateCliente(ConfiguracoesMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['nome_pagina'] = "Criar Cliente"
+        context['nome_pagina'] = "Registrar Cliente"
         return context
 
 
@@ -195,7 +195,7 @@ class CreateVendedor(ConfiguracoesMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['nome_pagina'] = "Criar Vendedor"
+        context['nome_pagina'] = "Registrar Vendedor"
         return context
 
 
@@ -246,6 +246,7 @@ class CreateCompra(ConfiguracoesMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['nome_pagina'] = "Registrar compra"
+        context['cliente_form'] = ClienteForm
         return context
 
 
@@ -285,3 +286,13 @@ class ExcludeCompra(ConfiguracoesMixin, DeleteView):
         context['nome_model'] = 'compra'
         context['nome_pagina'] = f"Excluir {context['object'].nome}"
         return context
+
+
+class CreateClienteJson(View):
+    def post(self, *args, **kwargs):
+        form = ClienteForm(self.request.POST)
+        if form.is_valid():
+            cliente = form.save()
+            return JsonResponse({'nome': f'{cliente}', 'cliente_id': cliente.id})
+        else:
+            return JsonResponse({'errors': form.errors})
