@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 {% block title %}{{ nome_pagina }}{% endblock title %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/createObject.css' %}">
+<style> textarea{cursor: auto;} input[type='text']{cursor: auto;}
+    </style>
 {% endblock extra_head %}
 
 {% block conteudo %}
@@ -10,10 +13,18 @@
     <h1>{{ nome_pagina }}</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form }}
+        {% for f in form %}
+        {{ f.label }}
+        {% if f.errors %}
+        {{ f|attr:"aria-invalid:true" }}
+        {{ f.errors }}
+        {% else %}
+        {{ f|attr:"aria-invalid:false" }}
+        {% endif %}
+        {% endfor %}
         <input type="submit" value="Salvar" class="secondary">
         <a href="{% url 'home' %}" role="button" class="contrast cancelButton">Cancelar</a>
     </form>
 </article>
-
 {% endblock conteudo %}
+<script></script>

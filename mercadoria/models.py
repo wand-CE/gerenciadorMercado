@@ -25,12 +25,12 @@ class Categoria(models.Model):
 
 class Produto(models.Model):
     nome = models.CharField(max_length=100, null=False, unique=True)
+    categoria = models.ForeignKey(
+        Categoria, on_delete=models.SET_NULL, null=True)
     preco = models.DecimalField(max_digits=5, decimal_places=2, null=False, default=0.00,
                                 validators=[MinValueValidator(0.00)])
     quantidade_estoque = models.IntegerField(
-        null=False, default=0, verbose_name='Quantidade em Estoque')
-    categoria = models.ForeignKey(
-        Categoria, on_delete=models.SET_NULL, null=True)
+        null=False, default=0, verbose_name='Quantidade em Estoque', validators=[MinValueValidator(0)])
 
     class Meta:
         unique_together = ('nome', 'categoria')
@@ -66,7 +66,11 @@ class Cliente(Pessoa):
         return self.nome
 
     def get_fields_dict(self):
-        return {field.name: getattr(self, field.name) for field in self._meta.fields}
+        dicionario = {}
+        for field in self._meta.fields:
+            if field.name != 'endereco':
+                dicionario[field.name] = getattr(self, field.name)
+        return dicionario
 
 
 class Vendedor(Pessoa):
@@ -78,7 +82,11 @@ class Vendedor(Pessoa):
         return self.nome
 
     def get_fields_dict(self):
-        return {field.name: getattr(self, field.name) for field in self._meta.fields}
+        dicionario = {}
+        for field in self._meta.fields:
+            if field.name != 'endereco':
+                dicionario[field.name] = getattr(self, field.name)
+        return dicionario
 
 
 class Compra(models.Model):
@@ -88,8 +96,6 @@ class Compra(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True)
     horaCompra = models.DateTimeField(
         auto_now_add=True, null=False, verbose_name='Hora da compra')
-
-    # valorTotal = models.DecimalField(max_digits=7, decimal_places=2, null=False, validators=[MinValueValidator(0.00)])
 
     class Meta:
         verbose_name = 'Compra'

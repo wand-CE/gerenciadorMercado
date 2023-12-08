@@ -9,16 +9,16 @@
 <article>
     <form method="POST">
         <h1>{{ nome_pagina }}</h1>
-            {% csrf_token %}
-            Tem certeza que deseja excluir {{ nome_model }} {{ object }}?
-            <br>
-            <br>
-            <div class="grid">
-                <input type="submit" value="Excluir" class="secondary">
-                <div>
-                    <a href="{% url 'home' %}" role="button" class="contrast cancelButton">Cancelar</a>
-                </div>
+        {% csrf_token %}
+        Tem certeza que deseja excluir {{ nome_model }} {{ object }}?
+        <br>
+        <br>
+        <div class="grid">
+            <input type="submit" value="Excluir" class="secondary">
+            <div>
+                <a href="{% url redirect_to %}" role="button" class="contrast cancelButton">Cancelar</a>
             </div>
+        </div>
     </form>
 </article>
 

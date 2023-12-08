@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ nome_pagina }}{% endblock title %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/createObject.css' %}">
+{% endblock extra_head %}
+
+{% block conteudo %}
+<article>
+    <h2>{{ nome_pagina }}</h2>
+    <figure>
+        <table role="grid">
+            <thead>
+
+            <tr>
+                {% for campo in campos_objeto %}
+                <th>{{ campo }}</th>
+                {% endfor %}
+                <th>#</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key, e in elementos.items %}
+            <tr>
+                {% for valor in e.values %}
+                {% if campo != 'id' %}
+                <td>{{ valor|truncatechars:20 }}</td>
+                {% endif %}
+                {% endfor %}
+                <td>
+                    <a href="{% url 'detalharCompra' key %}" data-tooltip="Ver compra">
+                        <i class="bi bi-eye" style="font-size: 25px;"></i>
+                    </a>
+                    &emsp;
+                    <a href="{% url 'excluirCompra' key %}"
+                       data-tooltip="excluir">
+                        <i class="bi bi-trash" style="font-size: 25px;"></i>
+                    </a>
+                </td>
+                {% empty %}
+                <td colspan="15">Sem compras cadastradas!!!</td>
+                <a href="{% url 'criarCompra' %}" role="button">Cadastrar</a>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+    </figure>
+</article>
+{% endblock conteudo %}

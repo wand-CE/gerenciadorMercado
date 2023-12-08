@@ -28,8 +28,11 @@ urlpatterns = [
 
     path('criarCompra/', views.CreateCompra.as_view(), name='criarCompra'),
     path('listarCompras/', views.ListCompra.as_view(), name='listarCompras'),
-    path('editarCompra/<pk>', views.EditCompra.as_view(), name='editarCompra'),
+    path('detalhesCompra/<pk>', views.DetailCompra.as_view(), name='detalharCompra'),
     path('excluirCompra/<pk>', views.ExcludeCompra.as_view(), name='excluirCompra'),
 
     path('criarClienteJson/', views.CreateClienteJson.as_view(), name='clienteByJson'),
+    path('searchProducts/', views.SearchProducts.as_view(), name='searchProducts'),
+    path('registrarCompra/', views.CreateCompra.as_view(), name='registrarCompra'),
+
 ]

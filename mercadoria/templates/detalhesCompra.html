@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ nome_pagina }}{% endblock title %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/createObject.css' %}">
+<style>
+    .buttonExclude{background-color:var(--pico-color-red-700); border: 0px; width:100%}
+
+</style>
+{% endblock extra_head %}
+
+{% block conteudo %}
+<article>
+    <h1>{{ object }}</h1>
+    <table role="grid">
+        <tbody>
+        <tr>
+            <td><strong>Vendedor: </strong>{{ object.vendedor }}</td>
+        </tr>
+        <tr>
+            <td><strong>Cliente: </strong>{{ object.cliente }}</td>
+        </tr>
+        <tr>
+            <td><strong>Data da Compra: </strong>{{ object.horaCompra }}</td>
+        </tr>
+
+        </tbody>
+    </table>
+
+    <figure>
+        <table role="grid">
+            <caption><h4>Produtos da compra</h4></caption>
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Quantidade</th>
+                <th>Preço na compra</th>
+                <th>Preço total</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in itensCompra %}
+            <tr>
+                <td>{% if i.produto.nome %}{{ i.produto.nome }}{% else %}Excluído{% endif %}</td>
+                <td>{% if i.produto.categoria %}{{ i.produto.categoria }}{% else %}Excluído{% endif %}</td>
+                <td>{{ i.quantidade }}</td>
+                <td>R${{ i.precoAtual }}</td>
+                <td><strong>R${{ i.precoTotal}}</strong></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="4"><strong>Valor Total:</strong></td>
+                <td><strong>R${{ object.valor_total }}</strong></td>
+            </tr>
+            </tfoot>
+        </table>
+    </figure>
+    <a href="{% url 'excluirCompra' object.id %}" role="button" class="buttonExclude">Excluir</a>
+</article>
+
+{% endblock conteudo %}

@@ -1,3 +1,6 @@
+* {
+  cursor: default;
+}
 article {
   margin: 30px auto 0 auto;
 }
@@ -9,5 +12,10 @@ article {
 }
 
 #theme_switcher {
+  cursor: pointer;
+}
+
+a,
+.bi {
   cursor: pointer;
 }

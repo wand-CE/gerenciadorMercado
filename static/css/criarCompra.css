@@ -1,0 +1,32 @@
+form {
+  margin: auto 2em auto 2em !important;
+  position: relative;
+  margin: auto;
+}
+
+#searchResults {
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  background-color: var(--contrast);
+  color: var(--contrast-inverse);
+
+  border: 1px solid #ccc;
+  z-index: 1;
+  display: none;
+  border-radius: 10px;
+}
+
+.result-item {
+  margin: 5px 0;
+  cursor: pointer;
+}
+
+table {
+  margin-top: 20px;
+}
+
+input {
+  cursor: auto;
+}

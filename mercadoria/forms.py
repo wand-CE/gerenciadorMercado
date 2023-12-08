@@ -42,9 +42,26 @@ class ClienteForm(forms.ModelForm):
 
 
 class VendedorForm(forms.ModelForm):
+    nascimento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = Vendedor
         fields = '__all__'
+
+    def clean(self):
+        errors = {}
+        data = super().clean()
+        try:
+            int(data['cpf'])
+        except ValueError:
+            errors['cpf'] = 'CPF deve possuir apenas números'
+
+        hoje = date.today()
+        if data['nascimento'] >= hoje:
+            errors['nascimento'] = 'Data deve ser antiga'
+        if len(errors.values()):
+            raise ValidationError(errors)
+        return data
 
 
 class CompraForm(forms.ModelForm):
