@@ -1,9 +1,14 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from mercadoria import views
 
 urlpatterns = [
     path('', views.Home.as_view(), name='home'),
+
+    path('accounts/login/', views.LoginUserView.as_view(), name='loginVendedor'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logoutVendedor'),
+
     path('changeConfig/', views.SalvarConfiguracoes.as_view(), name='configuracoes'),
 
     path('criarCategoria/', views.CreateCategory.as_view(), name='criarCategoria'),
@@ -20,11 +25,6 @@ urlpatterns = [
     path('listarClientes/', views.ListCliente.as_view(), name='listarClientes'),
     path('editarCliente/<pk>', views.EditCliente.as_view(), name='editarCliente'),
     path('excluirCliente/<pk>', views.ExcludeCliente.as_view(), name='excluirCliente'),
-
-    path('criarVendedor/', views.CreateVendedor.as_view(), name='criarVendedor'),
-    path('listarVendedores/', views.ListVendedor.as_view(), name='listarVendedores'),
-    path('editarVendedor/<pk>', views.EditVendedor.as_view(), name='editarVendedor'),
-    path('excluirVendedor/<pk>', views.ExcludeVendedor.as_view(), name='excluirVendedor'),
 
     path('criarCompra/', views.CreateCompra.as_view(), name='criarCompra'),
     path('listarCompras/', views.ListCompra.as_view(), name='listarCompras'),

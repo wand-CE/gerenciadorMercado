@@ -1,0 +1,86 @@
+@charset "UTF-8";
+amp-sidebar {
+  position: relative;
+  padding: 1rem;
+  background-color: var(--contrast);
+  box-shadow: var(--card-box-shadow);
+}
+amp-sidebar button {
+  position: absolute;
+  top: var(--spacing);
+  right: var(--spacing);
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 2rem;
+  line-height: 1;
+}
+amp-sidebar aside {
+  min-width: 12rem;
+  margin-top: var(--typography-spacing-vertical);
+}
+amp-sidebar a,
+amp-sidebar a:active,
+amp-sidebar a:focus,
+amp-sidebar a:hover,
+amp-sidebar h3 {
+  color: var(--contrast-inverse);
+}
+amp-sidebar svg,
+body > nav svg {
+  height: 1rem;
+}
+details summary:focus:not([role="button"]),
+details summary {
+  color: var(--contrast-inverse) !important;
+}
+
+nav button,
+nav button:active,
+nav button:focus,
+nav button:hover {
+  margin: 0;
+  padding: 0;
+  outline: 0;
+  background-color: transparent;
+  color: var(--contrast-inverse);
+  border: none;
+  --box-shadow: none;
+}
+.errorlist {
+  color: red;
+}
+.errorlist li {
+  list-style: none !important;
+}
+#theme_switcher {
+  color: var(--contrast);
+}
+#siteName {
+  color: var(--contrast);
+  cursor: pointer;
+}
+input[type="text"] {
+  cursor: auto;
+}
+.logoutButton {
+  background-color: var(--contrast-inverse);
+  color: var(--contrast);
+}
+.logoutButton:hover {
+  background-color: var(--contrast);
+  color: var(--contrast-inverse);
+}
+
+@media (min-width: 798px) {
+  #asideUser {
+    position: absolute;
+    bottom: 35px;
+    color: black;
+  }
+  #exitButton {
+    font-size: xx-large;
+    bottom: -11px;
+    position: absolute;
+    right: 0;
+  }
+}

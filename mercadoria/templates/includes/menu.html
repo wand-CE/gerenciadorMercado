@@ -1,4 +1,4 @@
-<amp-sidebar id="sidebar-left" class="sample-sidebar contrast" layout="nodisplay" side="left" hidden>
+<amp-sidebar id="sidebar-left" class="sample-sidebar" layout="nodisplay" side="left" hidden>
     <aside>
         <nav>
             <ul>
@@ -34,14 +34,6 @@
                     </details>
                     <br>
                     <details>
-                        <summary style="margin-bottom: 20px;">Vendedores</summary>
-                        <ul style="margin-left:2%">
-                            <li><a href="{% url 'listarVendedores' %}">Listar</a></li>
-                            <li><a href="{% url 'criarVendedor' %}">Cadastrar</a></li>
-                        </ul>
-                    </details>
-                    <br>
-                    <details>
                         <summary style="margin-bottom: 20px;">Compras</summary>
                         <ul style="margin-left:2%">
                             <li><a href="{% url 'listarCompras' %}">Listar</a></li>
@@ -49,8 +41,19 @@
                         </ul>
                     </details>
                 </li>
-
             </ul>
         </nav>
+    </aside>
+    <aside id="asideUser">
+        {% if user.is_authenticated %}
+        <a>{{ user|title }}</a>
+        <a id="exitButton" href="{% url 'logoutVendedor' %}?next=/" data-tooltip="Sair">
+            <i class="bi bi-box-arrow-in-right"
+               style="font-size: xx-large"></i>
+        </a>
+        {% else %}
+        <a href="{% url 'loginVendedor' %}" role="button" class="logoutButton">Entrar</a>
+        {% endif %}
+
     </aside>
 </amp-sidebar>

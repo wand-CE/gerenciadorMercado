@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block conteudo %}
+<article>
+    <h2>Login Vendedor/Admin</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form }}
+        {% if 'next' not in request.get_full_path %}
+        <input name="next" type="hidden" value="{% url 'home' %}">
+        {% endif %}
+        <input type="submit" value="Entrar">
+    </form>
+</article>
+{% endblock conteudo %}

@@ -23,9 +23,7 @@
             {% for key, e in elementos.items %}
             <tr>
                 {% for valor in e.values %}
-                {% if campo != 'id' %}
                 <td>{{ valor|truncatechars:20 }}</td>
-                {% endif %}
                 {% endfor %}
                 <td>
                     <a href="{% url 'detalharCompra' key %}" data-tooltip="Ver compra">
@@ -33,7 +31,7 @@
                     </a>
                     &emsp;
                     <a href="{% url 'excluirCompra' key %}"
-                       data-tooltip="excluir">
+                       data-tooltip="Excluir">
                         <i class="bi bi-trash" style="font-size: 25px;"></i>
                     </a>
                 </td>

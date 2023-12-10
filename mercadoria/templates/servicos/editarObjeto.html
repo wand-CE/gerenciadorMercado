@@ -5,7 +5,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/createObject.css' %}">
 <style> textarea{cursor: auto;} input[type='text']{cursor: auto;}
-    </style>
+</style>
 {% endblock extra_head %}
 
 {% block conteudo %}
@@ -23,7 +23,7 @@
         {% endif %}
         {% endfor %}
         <input type="submit" value="Salvar" class="secondary">
-        <a href="{% url 'home' %}" role="button" class="contrast cancelButton">Cancelar</a>
+        <a href="{% url back_to %}" role="button" class="contrast cancelButton">Cancelar</a>
     </form>
 </article>
 {% endblock conteudo %}

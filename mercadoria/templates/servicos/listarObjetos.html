@@ -24,7 +24,7 @@
             {% for e in elementos %}
             <tr>
                 {% for campo, valor in e.get_fields_dict.items %}
-                {% if campo != 'id' %}
+                {% if campo in valid_fields %}
                 <td>{{ valor|truncatechars:20 }}</td>
                 {% endif %}
                 {% endfor %}

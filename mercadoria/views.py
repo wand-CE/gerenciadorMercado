@@ -2,14 +2,15 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
+from django.db import transaction
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, CreateView, ListView, DeleteView, UpdateView, FormView, DetailView
 
-from mercadoria.forms import CategoriaForm, ProdutoForm, ClienteForm, VendedorForm, CompraForm
-from mercadoria.models import Categoria, Configuracoes, Produto, Cliente, Vendedor, Compra, ItemCompra
+from mercadoria.forms import CategoriaForm, ProdutoForm, ClienteForm, CompraForm
+from mercadoria.models import Categoria, Configuracoes, Produto, Cliente, Compra, ItemCompra
 
 
 class ConfiguracoesMixin:
@@ -32,6 +33,16 @@ class SalvarConfiguracoes(View):
         return HttpResponse('')
 
 
+class LoginUserView(ConfiguracoesMixin, LoginView):
+    template_name = 'auth/login.html'
+
+    def form_valid(self, form):
+        usuario = form.cleaned_data['username']
+
+        messages.success(self.request, f'Seja bem vindo {usuario}!!!')
+        return super().form_valid(form)
+
+
 class Home(ConfiguracoesMixin, TemplateView):
     template_name = 'index.html'
 
@@ -42,9 +53,9 @@ class Home(ConfiguracoesMixin, TemplateView):
         return context
 
 
-class CreateCategory(ConfiguracoesMixin, CreateView):
+class CreateCategory(LoginRequiredMixin, ConfiguracoesMixin, CreateView):
     model = Categoria
-    template_name = 'criarObjeto.html'
+    template_name = 'servicos/criarObjeto.html'
     form_class = CategoriaForm
     success_url = reverse_lazy('listarCategorias')
 
@@ -53,10 +64,15 @@ class CreateCategory(ConfiguracoesMixin, CreateView):
         context['nome_pagina'] = "Registrar Categoria"
         return context
 
+    def form_valid(self, form):
+        nome = form.cleaned_data['nome']
+        messages.success(self.request, f'Categoria {nome} cadastrada!!!')
+        return super().form_valid(form)
+
 
 class ListCategory(ConfiguracoesMixin, ListView):
     model = Categoria
-    template_name = 'listarObjetos.html'
+    template_name = 'servicos/listarObjetos.html'
     context_object_name = 'elementos'
 
     def get_queryset(self):
@@ -64,8 +80,9 @@ class ListCategory(ConfiguracoesMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['campos_objeto'] = [
-            campo.name.title() for campo in Categoria._meta.fields if campo.name != 'id']
+        context['campos_objeto'] = ['Nome', 'Descrição']
+
+        context['valid_fields'] = ['nome', 'descricao']
 
         context['nome_pagina'] = "Categorias"
         return context
@@ -73,19 +90,26 @@ class ListCategory(ConfiguracoesMixin, ListView):
 
 class EditCategory(ConfiguracoesMixin, UpdateView):
     model = Categoria
-    template_name = 'editarObjeto.html'
+    template_name = 'servicos/editarObjeto.html'
     form_class = CategoriaForm
     success_url = reverse_lazy('listarCategorias')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['nome_pagina'] = f"Editar {context['object'].nome}"
+        context['back_to'] = 'listarCategorias'
+
         return context
+
+    def form_valid(self, form):
+        nome = form.cleaned_data['nome']
+        messages.success(self.request, f'Categoria {nome} editada!!!')
+        return super().form_valid(form)
 
 
 class ExcludeCategory(ConfiguracoesMixin, DeleteView):
     model = Categoria
-    template_name = 'excluirObjeto.html'
+    template_name = 'servicos/excluirObjeto.html'
     success_url = reverse_lazy('listarCategorias')
 
     def get_context_data(self, **kwargs):
@@ -96,10 +120,14 @@ class ExcludeCategory(ConfiguracoesMixin, DeleteView):
         context['nome_pagina'] = f"Excluir {context['object'].nome}"
         return context
 
+    def form_valid(self, form):
+        messages.success(self.request, f'Categoria excluída!!!')
+        return super().form_valid(form)
 
-class CreateProduto(ConfiguracoesMixin, CreateView):
+
+class CreateProduto(LoginRequiredMixin, ConfiguracoesMixin, CreateView):
     model = Produto
-    template_name = 'criarObjeto.html'
+    template_name = 'servicos/criarObjeto.html'
     form_class = ProdutoForm
     success_url = reverse_lazy('listarProdutos')
 
@@ -108,10 +136,15 @@ class CreateProduto(ConfiguracoesMixin, CreateView):
         context['nome_pagina'] = "Registrar Produto"
         return context
 
+    def form_valid(self, form):
+        nome = form.cleaned_data['nome']
+        messages.success(self.request, f'Produto {nome} cadastrado!!!')
+        return super().form_valid(form)
+
 
 class ListProduto(ConfiguracoesMixin, ListView):
     model = Produto
-    template_name = 'listarObjetos.html'
+    template_name = 'servicos/listarObjetos.html'
     context_object_name = 'elementos'
 
     def get_queryset(self):
@@ -120,6 +153,8 @@ class ListProduto(ConfiguracoesMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['campos_objeto'] = ['Nome', 'Categoria', 'Qtd.', 'Preço']
+
+        context['valid_fields'] = ['nome', 'categoria', 'preco', 'quantidade_estoque']
 
         for produto in context['elementos']:
             produto.nome = produto.nome.title()
@@ -131,19 +166,26 @@ class ListProduto(ConfiguracoesMixin, ListView):
 
 class EditProduto(ConfiguracoesMixin, UpdateView):
     model = Produto
-    template_name = 'editarObjeto.html'
+    template_name = 'servicos/editarObjeto.html'
     form_class = ProdutoForm
     success_url = reverse_lazy('listarProdutos')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['nome_pagina'] = f"Editar {context['object'].nome}"
+        context['back_to'] = 'listarProdutos'
+
         return context
+
+    def form_valid(self, form):
+        nome = form.cleaned_data['nome']
+        messages.success(self.request, f'Produto {nome} editado!!!')
+        return super().form_valid(form)
 
 
 class ExcludeProduto(ConfiguracoesMixin, DeleteView):
     model = Produto
-    template_name = 'excluirObjeto.html'
+    template_name = 'servicos/excluirObjeto.html'
     success_url = reverse_lazy('listarProdutos')
 
     def get_context_data(self, **kwargs):
@@ -154,11 +196,15 @@ class ExcludeProduto(ConfiguracoesMixin, DeleteView):
         context['nome_pagina'] = f"Excluir {context['object'].nome}"
         return context
 
+    def form_valid(self, form):
+        messages.success(self.request, f'Produto excluído!!!')
+        return super().form_valid(form)
 
-class CreateCliente(ConfiguracoesMixin, CreateView):
+
+class CreateCliente(LoginRequiredMixin, ConfiguracoesMixin, CreateView):
     model = Cliente
     form_class = ClienteForm
-    template_name = 'criarObjeto.html'
+    template_name = 'servicos/criarObjeto.html'
     success_url = reverse_lazy('listarClientes')
 
     def get_context_data(self, **kwargs):
@@ -166,10 +212,15 @@ class CreateCliente(ConfiguracoesMixin, CreateView):
         context['nome_pagina'] = "Registrar Cliente"
         return context
 
+    def form_valid(self, form):
+        nome = form.cleaned_data['nome']
+        messages.success(self.request, f'Cliente {nome} cadastrado!!!')
+        return super().form_valid(form)
+
 
 class ListCliente(ConfiguracoesMixin, ListView):
     model = Cliente
-    template_name = 'listarObjetos.html'
+    template_name = 'servicos/listarObjetos.html'
     context_object_name = 'elementos'
 
     def get_queryset(self):
@@ -177,19 +228,18 @@ class ListCliente(ConfiguracoesMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['campos_objeto'] = [
-            campo.name.title() for campo in Cliente._meta.fields if campo.name not in ['id', 'endereco']]
-
-        for cliente in context['elementos']:
-            cliente.nascimento = cliente.nascimento.strftime('%d/%m/%Y')
+        context['campos_objeto'] = ['CPF', 'Nome']
         context['nome_pagina'] = "Clientes"
+
+        context['valid_fields'] = ['cpf', 'nome']
+
         return context
 
 
 class EditCliente(ConfiguracoesMixin, UpdateView):
     model = Cliente
     form_class = ClienteForm
-    template_name = 'editarObjeto.html'
+    template_name = 'servicos/editarObjeto.html'
     success_url = reverse_lazy('listarClientes')
 
     def get_context_data(self, **kwargs):
@@ -198,12 +248,19 @@ class EditCliente(ConfiguracoesMixin, UpdateView):
         context['form']['nascimento'].initial = nascimento.initial.isoformat()
 
         context['nome_pagina'] = f"Editar cliente {context['object'].nome}"
+        context['back_to'] = 'listarClientes'
+
         return context
+
+    def form_valid(self, form):
+        nome = form.cleaned_data['nome']
+        messages.success(self.request, f'Cliente {nome} editado!!!')
+        return super().form_valid(form)
 
 
 class ExcludeCliente(ConfiguracoesMixin, DeleteView):
     model = Cliente
-    template_name = 'excluirObjeto.html'
+    template_name = 'servicos/excluirObjeto.html'
     success_url = reverse_lazy('listarClientes')
 
     def get_context_data(self, **kwargs):
@@ -214,71 +271,15 @@ class ExcludeCliente(ConfiguracoesMixin, DeleteView):
         context['nome_pagina'] = f"Excluir {context['object'].nome}"
         return context
 
-
-class CreateVendedor(ConfiguracoesMixin, CreateView):
-    model = Vendedor
-    form_class = VendedorForm
-    template_name = 'criarObjeto.html'
-    success_url = reverse_lazy('listarVendedores')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['nome_pagina'] = "Registrar Vendedor"
-        return context
+    def form_valid(self, form):
+        messages.success(self.request, f'Cliente excluído!!!')
+        return super().form_valid(form)
 
 
-class ListVendedor(ConfiguracoesMixin, ListView):
-    model = Vendedor
-    template_name = 'listarObjetos.html'
-    context_object_name = 'elementos'
-
-    def get_queryset(self):
-        return Vendedor.objects.all()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['campos_objeto'] = [
-            campo.name.title() for campo in Vendedor._meta.fields if campo.name not in ['id', 'endereco']]
-        for vendedor in context['elementos']:
-            vendedor.nascimento = vendedor.nascimento.strftime('%d/%m/%Y')
-
-        context['nome_pagina'] = "Vendedores"
-        return context
-
-
-class EditVendedor(ConfiguracoesMixin, UpdateView):
-    model = Vendedor
-    form_class = VendedorForm
-    template_name = 'editarObjeto.html'
-    success_url = reverse_lazy('listarVendedores')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        nascimento = context['form']['nascimento']
-        context['form']['nascimento'].initial = nascimento.initial.isoformat()
-
-        context['nome_pagina'] = f"Editar vendedor {context['object'].nome}"
-        return context
-
-
-class ExcludeVendedor(ConfiguracoesMixin, DeleteView):
-    model = Vendedor
-    template_name = 'excluirObjeto.html'
-    success_url = reverse_lazy('listarVendedores')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['nome_model'] = 'vendedor'
-        context['redirect_to'] = 'listarVendedores'
-
-        context['nome_pagina'] = f"Excluir {context['object'].nome}"
-        return context
-
-
-class CreateCompra(ConfiguracoesMixin, CreateView):
+class CreateCompra(LoginRequiredMixin, ConfiguracoesMixin, CreateView):
     model = Compra
     form_class = CompraForm
-    template_name = 'criarCompra.html'
+    template_name = 'servicos/compras/criarCompra.html'
     success_url = reverse_lazy('listarCompras')
 
     def get_context_data(self, **kwargs):
@@ -289,40 +290,48 @@ class CreateCompra(ConfiguracoesMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         data = request.POST
-        vendedor_id = data.get('vendedor', None)
+        vendedor = request.user
         cliente_id = data.get('cliente', None)
         produtos = data.get('produtos', None)
-        if all([vendedor_id, cliente_id, produtos]):
-            vendedor = Vendedor.objects.get(id=vendedor_id)
-            cliente = Cliente.objects.get(id=cliente_id)
 
-            produtos = json.loads(f'[{produtos}]')
+        try:
+            with transaction.atomic():
+                if all([vendedor.is_authenticated, cliente_id, produtos]):
+                    cliente = Cliente.objects.get(id=cliente_id)
+                    produtos = json.loads(f'[{produtos}]')
+                    compra = Compra.objects.create(cliente=cliente, vendedor=vendedor)
 
-            compra = Compra.objects.create(cliente=cliente, vendedor=vendedor)
-            compra.save()
+                    for p in produtos:
+                        produto = Produto.objects.get(id=p['id'])
+                        quantidade = int(p['quantidade'])
+                        if quantidade:
+                            if produto.quantidade_estoque:
+                                if quantidade > produto.quantidade_estoque:
+                                    message = f'O produto {produto.nome} não possui {quantidade} unidades em estoque'
+                                    compra.delete()
+                                    return JsonResponse({'success': False, 'message': message})
+                                item_compra = ItemCompra.objects.create(
+                                    compra=compra,
+                                    produto=produto,
+                                    quantidade=quantidade,
+                                )
 
-            for p in produtos:
-                produto = Produto.objects.get(id=p['id'])
-                quantidade = int(p['quantidade'])
-                if quantidade:
-                    if produto.quantidade_estoque:
-                        if quantidade > produto.quantidade_estoque:
-                            quantidade = produto.quantidade_estoque
-                        item_compra = ItemCompra.objects.create(compra=compra, produto=produto,
-                                                                quantidade=quantidade)
-                        item_compra.save()
-                        produto.quantidade_estoque -= quantidade
-                        produto.save()
-                    else:
-                        messages.error(self.request, f'O produto {produto} está fora de estoque')
-            return JsonResponse({'success': 'yes'})
-        # return redirect('listarCompras')
-        return JsonResponse({'success': 'yes'})
+                                produto.quantidade_estoque -= quantidade
+                                produto.save()
+                            else:
+                                message = self.request, f'O produto {produto} está fora de estoque'
+                                compra.delete()
+                                return JsonResponse({'success': False, 'message': message})
+
+                    messages.success(self.request, 'Compra registrada!!!')
+                    return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'Não foi possível registrar a compra'})
 
 
 class ListCompra(ConfiguracoesMixin, ListView):
     model = Compra
-    template_name = 'listarCompras.html'
+    template_name = 'servicos/compras/listarCompras.html'
 
     def get_queryset(self):
         return Compra.objects.all()
@@ -338,33 +347,19 @@ class ListCompra(ConfiguracoesMixin, ListView):
         for compra in self.get_queryset():
             context['elementos'][compra.id] = {
                 'vendedor': compra.vendedor,
-                'cliente': compra.vendedor,
-                'HoraCompra': compra.horaCompra,
+                'cliente': compra.cliente,
+                'HoraCompra': compra.horaCompra.strftime('%d/%m/%Y %H:%M'),
                 'precoTotal': f'R${compra.valor_total()}'.replace('.', ','),
             }
 
-        for compra in context['elementos']:
-            print(compra)
         context['nome_pagina'] = "Compras"
 
         return context
 
 
-class EditCompra(ConfiguracoesMixin, UpdateView):
-    model = Compra
-    form_class = CompraForm
-    template_name = 'editarObjeto.html'
-    success_url = reverse_lazy('listarCompras')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['nome_pagina'] = f"Editar {context['object']}"
-        return context
-
-
 class ExcludeCompra(ConfiguracoesMixin, DeleteView):
     model = Compra
-    template_name = 'excluirObjeto.html'
+    template_name = 'servicos/excluirObjeto.html'
     success_url = reverse_lazy('listarCompras')
 
     def get_context_data(self, **kwargs):
@@ -374,6 +369,10 @@ class ExcludeCompra(ConfiguracoesMixin, DeleteView):
 
         context['nome_pagina'] = f"Excluir {context['object']}"
         return context
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Compra excluída!!!')
+        return super().form_valid(form)
 
 
 class CreateClienteJson(LoginRequiredMixin, View):
@@ -405,7 +404,7 @@ class SearchProducts(LoginRequiredMixin, View):
 
 class DetailCompra(ConfiguracoesMixin, LoginRequiredMixin, DetailView):
     model = Compra
-    template_name = 'detalhesCompra.html'
+    template_name = 'servicos/compras/detalhesCompra.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()

@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator, MinValueValidator, RegexValidator
 from django.db import models
 
@@ -27,10 +28,10 @@ class Produto(models.Model):
     nome = models.CharField(max_length=100, null=False, unique=True)
     categoria = models.ForeignKey(
         Categoria, on_delete=models.SET_NULL, null=True)
-    preco = models.DecimalField(max_digits=5, decimal_places=2, null=False, default=0.00,
-                                validators=[MinValueValidator(0.00)])
     quantidade_estoque = models.IntegerField(
         null=False, default=0, verbose_name='Quantidade em Estoque', validators=[MinValueValidator(0)])
+    preco = models.DecimalField(max_digits=5, decimal_places=2, null=False, default=0.00,
+                                validators=[MinValueValidator(0.00)])
 
     class Meta:
         unique_together = ('nome', 'categoria')
@@ -73,7 +74,14 @@ class Cliente(Pessoa):
         return dicionario
 
 
-class Vendedor(Pessoa):
+class Vendedor(User):
+    cpf = models.CharField(null=False, unique=True,
+                           validators=[MinLengthValidator(11), RegexValidator(r'^\d{11}$',
+                                                                              'CPF inválido')],
+                           verbose_name='CPF', max_length=11)
+    endereco = models.CharField(max_length=150, null=False)
+    nascimento = models.DateField(null=False)
+
     class Meta:
         verbose_name = 'Vendedor'
         verbose_name_plural = 'Vendedores'
@@ -91,7 +99,7 @@ class Vendedor(Pessoa):
 
 class Compra(models.Model):
     vendedor = models.ForeignKey(
-        Vendedor, on_delete=models.SET_NULL, null=True)
+        User, on_delete=models.SET_NULL, null=True)
     # depois sera mudado para adicionar vendedor automaticamente com base no vendedor conectado
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True)
     horaCompra = models.DateTimeField(

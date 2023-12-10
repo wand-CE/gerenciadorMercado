@@ -259,8 +259,6 @@ form_compra.addEventListener("submit", (event) => {
 
   if (isValid) {
     let form = new FormData(form_compra);
-    console.log(produtosLista);
-
     form.append("produtos", produtosLista);
 
     fetch("/registrarCompra/", {
@@ -269,10 +267,35 @@ form_compra.addEventListener("submit", (event) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-      });
-    console.log(produtosLista);
+        if (data.success) {
+          window.location.replace(`${window.location.origin}/listarCompras/`);
+        } else {
+          [...notification.children].forEach((item) => {
+            if (!item.classList.contains("header")) {
+              item.remove();
+            }
+          });
+          let message = document.createElement("div");
 
-    console.log(event);
+          message.style.color = "red";
+          message.textContent = data.message;
+
+          notification.appendChild(message);
+          notification.style.display = "block";
+
+          showNotification(notification);
+        }
+      });
   }
 });
+
+const notification = document.getElementById("notifications");
+
+function showNotification(notification) {
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 5000);
+}
+if (notification) {
+  showNotification(notification);
+}

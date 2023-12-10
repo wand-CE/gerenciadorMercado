@@ -19,3 +19,19 @@ a,
 .bi {
   cursor: pointer;
 }
+
+#notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: var(--contrast);
+  color: var(--contrast-inverse);
+  padding: 15px;
+  border-radius: 5px;
+  /* display: none; */
+  z-index: 1000;
+}
+
+input[type='password']{
+    cursor:auto;
+}

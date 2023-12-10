@@ -25,7 +25,13 @@ class ClienteAdmin(admin.ModelAdmin):
 
 @admin.register(Vendedor)
 class VendedorAdmin(admin.ModelAdmin):
-    list_display = ['cpf', 'nome', 'endereco', 'nascimento']
+    list_display = ['cpf', 'username']
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Informações Pessoais', {'fields': (
+            'first_name', 'last_name', 'email', 'cpf', 'nascimento', 'endereco')}),
+    )
 
 
 @admin.register(Compra)
