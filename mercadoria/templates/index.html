@@ -1,1 +1,40 @@
 {% extends 'base.html' %}
+{% block conteudo %}
+<article>
+    <h3>Painel principal</h3>    
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+          <article>
+            <h4>Visão geral de vendas</h4>
+            {% if totaisVendidos %}
+            <p>Quantidade vendida: {{ totaisVendidos.quantidadeTotal }}</p>
+            <p>Total Vendido: R${{ totaisVendidos.precoVendido }}</p>
+            {% else %}
+            <p>Quantidade vendida: 0</p>
+            <p>Total Vendido: R$0,00</p>
+            {% endif %}
+          </article>
+    
+          <article>
+            <h3>Produtos em falta</h3>
+            <div style="overflow: auto; max-height: 200px;">
+            {% for p in em_falta %}
+            <a href="{% url 'editarProduto' p.id %}">-{{ p }}</a>
+            <br>
+            {% empty %}
+            Nenhum produto em falta!!!
+            {% endfor%}
+            </div>
+          </article>
+          {% if user.is_authenticated%}
+          <article>            
+            <h3>Logado como</h3>
+            <a>{{ user|title }}</a>
+            <a href="{% url 'logoutVendedor' %}?next=/" data-tooltip="Sair">
+                <i class="bi bi-box-arrow-in-right"
+                style="font-size: xx-large"></i>
+            </a>
+          </article>
+          {% endif %}
+        </div>
+</article>
+{% endblock conteudo %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock extra_head %}
+
+{% block conteudo %}
+<article>
+<h3>Gerar Relatório</h3>
+<form id="generateReport">
+    <div class="grid">
+        <span>Relatório de vendas por:</span>
+        <select name="tipoRelatorio" style="grid-column: span 2" required>
+            <option disabled selected value>Selecione...</option>
+            <option value="produtos">Produtos</option>
+            <option value="categorias">Categorias</option>
+            <option value="clientes">Clientes</option>
+            <option value="meses">Lucros por meses</option>
+            <option value="anos">Lucros por anos</option>
+        </select>
+    </div>
+    <div class="mesesAnosHide">
+        <div>
+            <span>Ordem:</span>
+            <select name="order" style="grid-column: span 2" required>
+                <option value="mais" selected>Mais vendidos</option>
+                <option value="menos">Menos Vendidos</option>
+            </select>
+        </div>
+        
+        Período:
+        <label><input type="radio" checked value="Todo" name="periodo" id="todo">Todo</label>
+        <label><input type="radio" value="range" name="periodo" id="radioRange">Selecionar intervalo</label>
+        <div class="grid" id="dateRange" style="display: none">
+            <span>De: <input type="date" name="dateInit"></span>
+            <span>Até: <input type="date" name="dateEnd"></span>
+        </div>
+    </div>
+    <button type="submit">Gerar</button>
+</form>
+<div>
+<h3 id="graphic_title"></h3>
+<canvas id="meuGrafico" style="display: none;"></canvas>
+</div>
+
+{{result|json_script:"result"}}
+</article>
+{% endblock conteudo %}
+
+{% block extra_body %}
+<script src="{% static 'js/graficosRelatorios.js' %}"></script>
+{% endblock extra_body %}

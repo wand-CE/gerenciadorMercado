@@ -35,4 +35,7 @@ urlpatterns = [
     path('searchProducts/', views.SearchProducts.as_view(), name='searchProducts'),
     path('registrarCompra/', views.CreateCompra.as_view(), name='registrarCompra'),
 
+    path('reports/', views.ReportsView.as_view(), name='reportsPage'),
+    path('reportsJson/', views.GenerateReportsView.as_view(), name='reportsJson'),
+
 ]

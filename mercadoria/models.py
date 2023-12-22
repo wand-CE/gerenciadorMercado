@@ -87,7 +87,7 @@ class Vendedor(User):
         verbose_name_plural = 'Vendedores'
 
     def __str__(self):
-        return self.nome
+        return self.username
 
     def get_fields_dict(self):
         dicionario = {}

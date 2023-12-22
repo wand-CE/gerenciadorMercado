@@ -25,6 +25,9 @@
 
     {% block conteudo %}{% endblock conteudo %}
 </main>
+<footer class="container">
+    Desenvolvido por <a href="https://github.com/wand-CE">Wanderson Soares</a>
+</footer>
 <script>
     let isLight = {{ tema|lower }};
     const html = document.documentElement;
@@ -38,6 +41,32 @@
 
     switchTheme.setAttribute('data-tooltip', `Tema ${isLight ? 'escuro' : 'claro'}`);
 
+    class ThemeObservable{
+      constructor(){
+        this.elements = [];
+      }
+
+      subscribe(element){
+        this.elements.push(element);
+      }
+
+      unsubscribe(element){
+        const index = this.elements.indexOf(element);
+        if (index !== -1) {
+          this.elements.splice(index, 1);
+        }
+      }
+
+      notify() {
+        this.elements.forEach(element => {
+          element.change();
+        });
+      }
+
+    }
+
+    const themeObservable = new ThemeObservable();
+
     switchTheme.addEventListener('click', (e) => {
       e.preventDefault();
       isLight = !isLight;
@@ -46,6 +75,8 @@
       switchTheme.setAttribute('data-tooltip', `Tema ${isLight ? 'claro' : 'escuro'}`);
       removeTooltip();
       fetch(`/changeConfig/?tema=${isLight}`);
+      themeObservable.notify();
+
     });
 
     const removeTooltip = (timeInt = 1750) => {

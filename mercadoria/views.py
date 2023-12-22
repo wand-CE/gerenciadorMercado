@@ -1,16 +1,21 @@
+import datetime
 import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView
 from django.db import transaction
+from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, CreateView, ListView, DeleteView, UpdateView, FormView, DetailView
 
 from mercadoria.forms import CategoriaForm, ProdutoForm, ClienteForm, CompraForm
 from mercadoria.models import Categoria, Configuracoes, Produto, Cliente, Compra, ItemCompra
+
+from django.db.models import Count, Sum
 
 
 class ConfiguracoesMixin:
@@ -36,11 +41,29 @@ class SalvarConfiguracoes(View):
 class LoginUserView(ConfiguracoesMixin, LoginView):
     template_name = 'auth/login.html'
 
+    def get(self, request, *args, **kwargs):
+        usuario = request.user
+        if usuario.is_authenticated:
+            messages.error(self.request, f'Você já está logado como {usuario}')
+            return redirect('home')
+        return super().get(request, *args, **kwargs)
+
     def form_valid(self, form):
+        usuario = self.request.user
+        if usuario.is_authenticated:
+            messages.error(self.request, f'Você já está logado como {usuario}')
+            return redirect('home')
         usuario = form.cleaned_data['username']
 
         messages.success(self.request, f'Seja bem vindo {usuario}!!!')
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        usuario = self.request.user
+        if usuario.is_authenticated:
+            messages.error(self.request, f'Você já está logado como {usuario}')
+            return redirect('home')
+        return super().form_invalid(form)
 
 
 class Home(ConfiguracoesMixin, TemplateView):
@@ -48,7 +71,11 @@ class Home(ConfiguracoesMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tema'] = Configuracoes.objects.first().temaEscuro
+        context['totaisVendidos'] = ItemCompra.objects.aggregate(
+            quantidadeTotal=Sum('quantidade'),
+            precoVendido=Sum('precoTotal')
+        )
+        context['em_falta'] = Produto.objects.filter(quantidade_estoque=0)
 
         return context
 
@@ -154,7 +181,8 @@ class ListProduto(ConfiguracoesMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['campos_objeto'] = ['Nome', 'Categoria', 'Qtd.', 'Preço']
 
-        context['valid_fields'] = ['nome', 'categoria', 'preco', 'quantidade_estoque']
+        context['valid_fields'] = [
+            'nome', 'categoria', 'preco', 'quantidade_estoque']
 
         for produto in context['elementos']:
             produto.nome = produto.nome.title()
@@ -299,7 +327,8 @@ class CreateCompra(LoginRequiredMixin, ConfiguracoesMixin, CreateView):
                 if all([vendedor.is_authenticated, cliente_id, produtos]):
                     cliente = Cliente.objects.get(id=cliente_id)
                     produtos = json.loads(f'[{produtos}]')
-                    compra = Compra.objects.create(cliente=cliente, vendedor=vendedor)
+                    compra = Compra.objects.create(
+                        cliente=cliente, vendedor=vendedor)
 
                     for p in produtos:
                         produto = Produto.objects.get(id=p['id'])
@@ -408,5 +437,120 @@ class DetailCompra(ConfiguracoesMixin, LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
-        context['itensCompra'] = ItemCompra.objects.filter(compra=context['object'].id)
+        context['itensCompra'] = ItemCompra.objects.filter(
+            compra=context['object'].id)
         return context
+
+
+class ReportsView(ConfiguracoesMixin, LoginRequiredMixin, TemplateView):
+    template_name = 'servicos/reports/reports.html'
+
+
+class GenerateReportsView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        data = self.makeChart()
+        return JsonResponse(data)
+
+    def makeChart(self):
+        request = self.request.GET
+        tipo = request.get('tipoRelatorio', None)
+        periodo = request.get('periodo', None)
+        ordem = request.get('order', None)
+
+        listTipos = ['produtos', 'clientes', 'categorias', 'meses', 'anos']
+
+        if tipo and (tipo in listTipos):
+            dateInit = request.get('dateInit', None)
+            dateEnd = request.get('dateEnd', None)
+
+            if periodo == 'range' and dateInit and dateEnd:
+                objetosItemCompra = ItemCompra.objects.filter(
+                    compra__horaCompra__range=[*sorted([dateInit, dateEnd])])
+            else:
+                objetosItemCompra = ItemCompra.objects
+
+            result = eval(f'self.por_{tipo}(objetosItemCompra, ordem)')
+
+            graphic_title = ''
+
+            if tipo == 'produtos':
+                graphic_title = f'{tipo.title()} {ordem.title()} Vendidos'
+            elif tipo == 'categorias':
+                graphic_title = f'{tipo.title()} {ordem.title()} Vendidas'
+            elif tipo == 'clientes':
+                graphic_title = f'{tipo.title()} que {ordem.title()} Compraram'
+            elif tipo == 'meses':
+                graphic_title = f'Lucros por Mês'
+                return {'result': result, 'title': graphic_title, 'is_month': True}
+
+            elif tipo == 'anos':
+                graphic_title = f'Lucros por Anos'
+
+            return {'result': result, 'title': graphic_title}
+
+    def por_categorias(self, objeto, ordem):
+        result = (objeto
+                  .values('produto__categoria__nome')
+                  .annotate(valor=Sum('precoTotal'), quantidade_vendida=Sum('quantidade'),
+                            categ=Count('produto__categoria__nome'))
+                  .order_by('-valor', 'quantidade_vendida'))
+
+        if ordem == 'menos':
+            result = result[::-1]
+
+        return [[element['produto__categoria__nome'], element['valor'], element['categ']] for element in result[:10]]
+
+    def por_produtos(self, objeto, ordem):
+        result = (objeto
+                  .values('produto__nome', 'produto__categoria__nome')
+                  .annotate(valor=Sum('precoTotal'), quantidade_vendida=Sum('quantidade'))
+                  .order_by('-valor', 'quantidade_vendida'))
+
+        if ordem == 'menos':
+            result = result[::-1]
+
+        return [[element['produto__nome'], element['valor'], element['quantidade_vendida']] for element in result[:10]]
+
+    def por_clientes(self, objeto, ordem):
+        result = (objeto
+                  .values('compra__cliente__nome')
+                  .annotate(valor=Sum('precoTotal'), quantidade_vendida=Sum('quantidade'),
+                            clientes=Count('compra__cliente__nome'))
+                  .order_by('-valor', 'quantidade_vendida'))
+
+        if ordem == 'menos':
+            result = result[::-1]
+
+        return [[element['compra__cliente__nome'], element['valor'], element['quantidade_vendida']] for element in
+                result[:10]]
+
+    def por_meses(self, objeto, ordem):
+        result = (
+            Compra.objects
+            .annotate(mes=ExtractMonth('horaCompra', tzinfo=datetime.timezone.utc), quantidade=Count('horaCompra'))
+            .order_by('-mes'))
+
+        meses = {}
+        for i in range(1, 13):
+            meses[i] = 0
+
+        for r in result:
+            mes = r.mes
+            meses[mes] = meses.get(mes) + r.valor_total()
+
+        return [[mes, valorTotal, mes] for mes, valorTotal in meses.items()]
+
+    def por_anos(self, objeto, ordem):
+        result = (
+            Compra.objects
+            .annotate(ano=ExtractYear('horaCompra', tzinfo=datetime.timezone.utc), quantidade=Count('horaCompra'))
+            .order_by('-ano'))
+
+        anos = {}
+
+        for r in result:
+            ano = r.ano
+            anos[ano] = anos.get(ano, 0) + r.valor_total()
+
+        return [[ano, valorTotal, ano] for ano, valorTotal in sorted(anos.items())]
