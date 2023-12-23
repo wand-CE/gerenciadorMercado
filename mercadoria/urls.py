@@ -10,6 +10,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logoutVendedor'),
 
     path('changeConfig/', views.SalvarConfiguracoes.as_view(), name='configuracoes'),
+    path('changeUserData/', views.ChangeUserData.as_view(), name='changeUserData'),
 
     path('criarCategoria/', views.CreateCategory.as_view(), name='criarCategoria'),
     path('listarCategorias/', views.ListCategory.as_view(), name='listarCategorias'),

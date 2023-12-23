@@ -3,7 +3,9 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
+from django.core.validators import RegexValidator
 from django.db import transaction
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.http import HttpResponse, JsonResponse
@@ -12,7 +14,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, CreateView, ListView, DeleteView, UpdateView, FormView, DetailView
 
-from mercadoria.forms import CategoriaForm, ProdutoForm, ClienteForm, CompraForm
+from mercadoria.forms import CategoriaForm, ProdutoForm, ClienteForm, CompraForm, UserDataForm
 from mercadoria.models import Categoria, Configuracoes, Produto, Cliente, Compra, ItemCompra
 
 from django.db.models import Count, Sum
@@ -36,6 +38,19 @@ class SalvarConfiguracoes(View):
             configuracoes.save()
 
         return HttpResponse('')
+
+
+class ChangeUserData(LoginRequiredMixin, View):
+    form_class = UserDataForm
+
+    def get(self, request):
+        form = self.form_class(request.GET)
+        if form.is_valid():
+            request.user.username = form.cleaned_data['username'].title()
+            request.user.save()
+            return JsonResponse({"success": "Nome trocado com sucesso", 'username': request.user.username})
+        else:
+            return JsonResponse({"warning": form.errors['username']})
 
 
 class LoginUserView(ConfiguracoesMixin, LoginView):

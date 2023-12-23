@@ -48,7 +48,7 @@
     </aside>
     <aside id="asideUser">
         {% if user.is_authenticated %}
-        <a>{{ user|title }}</a>
+        <a on="tap:sidebar-left-user-config.toggle" style="overflow-wrap: anywhere;" class="currentUsername">{{ user|title }}</a>
         <a id="exitButton" href="{% url 'logoutVendedor' %}?next=/" data-tooltip="Sair">
             <i class="bi bi-box-arrow-in-right"
                style="font-size: xx-large"></i>
@@ -59,3 +59,19 @@
 
     </aside>
 </amp-sidebar>
+{% if user.is_authenticated %}    
+<amp-sidebar id="sidebar-left-user-config" class="sample-sidebar" layout="nodisplay" side="left" hidden>
+    <aside>
+        <ul>
+            <i class="bi bi-arrow-left" on="tap:sidebar-left-user-config.close" aria-label="Open menu"></i>
+        </ul>
+        <form id="changeUserDataForm" style="color: var(--contrast-inverse);">
+            <span><strong>Nome atual:</strong><span class="currentUsername">{{ user }}</span></span>
+            <label>Novo nome de usuario:</label>
+            <div class="errorList" style="color: red;"></div>
+            <input type="text" name="username" style="background-color: var(--contrast-inverse);" required>
+            <input type="submit" class="secondary" value="Salvar">
+        </form>
+    </aside>
+</amp-sidebar>
+{% endif %}

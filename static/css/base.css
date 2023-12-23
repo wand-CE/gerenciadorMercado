@@ -29,9 +29,9 @@ a,
   padding: 15px;
   border-radius: 5px;
   /* display: none; */
-  z-index: 1000;
+  z-index: 1000000000000;
 }
 
-input[type='password']{
-    cursor:auto;
+input[type="password"] {
+  cursor: auto;
 }

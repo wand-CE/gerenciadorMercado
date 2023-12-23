@@ -85,6 +85,50 @@
       }, timeInt);
     };
 </script>
+{% if user.is_authenticated %}
+<script>
+  const changeUserDataForm = document.getElementById('changeUserDataForm');
+  changeUserDataForm.addEventListener("submit", (event)=>{
+    event.preventDefault();
+
+    let usernameInput = changeUserDataForm.querySelector("input[name='username']");
+    fetch(`/changeUserData/?username=${usernameInput.value}`).then(res=>res.json()).then((data)=>{
+      let errorList = changeUserDataForm.querySelector(".errorList");
+
+      if (data.success){
+        errorList.style.display = 'none';
+        document.querySelectorAll('.currentUsername').forEach((item)=>{item.textContent = data.username})
+
+        let notifications = document.getElementById('notifications');
+        let headerNotifications = notifications.querySelector('.header');
+
+        notifications.innerHTML = '';
+
+        notifications.innerHTML = `<div style="color: green;">${data.success}</div>`;
+        notifications.insertBefore(headerNotifications, notifications.children[0]);
+
+        notifications.style.display = 'block';        
+        usernameInput.value = '';
+
+        setTimeout(() => {
+          notifications.style.display = "none";
+        }, 5000);
+
+      }else{
+        errorList.innerHTML = '';
+        errorList.style.display = 'inherit';
+
+        data.warning.forEach((item)=>{
+          let error = document.createElement('div');
+          error.innerHTML = item;
+
+          errorList.appendChild(error);
+        })
+      }
+    })
+  })
+</script>
+{% endif %}
 {% block extra_body %}
 {% endblock extra_body %}
 </body>

@@ -3,7 +3,7 @@ from datetime import date
 from django import forms
 from django.core.exceptions import ValidationError
 
-from mercadoria.models import Categoria, Produto, Cliente, Compra
+from mercadoria.models import Categoria, Produto, Cliente, Compra, Vendedor
 
 
 class CategoriaForm(forms.ModelForm):
@@ -41,27 +41,10 @@ class ClienteForm(forms.ModelForm):
         return data
 
 
-# class VendedorForm(forms.ModelForm):
-#    nascimento = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-#
-#    class Meta:
-#        model = Vendedor
-#        fields = '__all__'
-#
-#    def clean(self):
-#        errors = {}
-#        data = super().clean()
-#        try:
-#            int(data['cpf'])
-#        except ValueError:
-#            errors['cpf'] = 'CPF deve possuir apenas números'
-#
-#        hoje = date.today()
-#        if data['nascimento'] >= hoje:
-#            errors['nascimento'] = 'Data deve ser antiga'
-#        if len(errors.values()):
-#            raise ValidationError(errors)
-#        return data
+class UserDataForm(forms.ModelForm):
+    class Meta:
+        model = Vendedor
+        fields = ['username']
 
 
 class CompraForm(forms.ModelForm):

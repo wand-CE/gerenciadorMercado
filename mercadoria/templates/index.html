@@ -7,7 +7,7 @@
             <h4>Visão geral de vendas</h4>
             {% if totaisVendidos %}
             <p>Quantidade vendida: {{ totaisVendidos.quantidadeTotal }}</p>
-            <p>Total Vendido: R${{ totaisVendidos.precoVendido }}</p>
+            <p style="flex-wrap: nowrap;">Total Vendido: R$<span id="totalVendido">{{ totaisVendidos.precoVendido }}</span></p>
             {% else %}
             <p>Quantidade vendida: 0</p>
             <p>Total Vendido: R$0,00</p>
@@ -38,3 +38,12 @@
         </div>
 </article>
 {% endblock conteudo %}
+{% block extra_body %}
+<script>
+  let totalVendido = document.getElementById('totalVendido');
+  let takeCents = totalVendido.textContent.split(",");
+  takeCents[0] = takeCents[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  totalVendido.textContent = takeCents.join(',')  
+</script>
+{% endblock extra_body %}
