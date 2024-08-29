@@ -26,7 +26,7 @@
     {% block conteudo %}{% endblock conteudo %}
 </main>
 <footer class="container">
-    Desenvolvido por <a href="https://github.com/wand-CE">Wanderson Soares</a>
+    Desenvolvido por <a target="_blank" href="https://github.com/wand-CE">Wanderson Soares</a>
 </footer>
 <script>
     let isLight = {{ tema|lower }};
@@ -36,98 +36,106 @@
     const moon = '<i class="bi bi-sun"></i>';
 
     document.addEventListener('DOMContentLoaded', () => {
-      switchTheme.innerHTML = isLight ? sun : moon;
+        switchTheme.innerHTML = isLight ? sun : moon;
     });
 
     switchTheme.setAttribute('data-tooltip', `Tema ${isLight ? 'escuro' : 'claro'}`);
 
-    class ThemeObservable{
-      constructor(){
-        this.elements = [];
-      }
-
-      subscribe(element){
-        this.elements.push(element);
-      }
-
-      unsubscribe(element){
-        const index = this.elements.indexOf(element);
-        if (index !== -1) {
-          this.elements.splice(index, 1);
+    class ThemeObservable {
+        constructor() {
+            this.elements = [];
         }
-      }
 
-      notify() {
-        this.elements.forEach(element => {
-          element.change();
-        });
-      }
+        subscribe(element) {
+            this.elements.push(element);
+        }
+
+        unsubscribe(element) {
+            const index = this.elements.indexOf(element);
+            if (index !== -1) {
+                this.elements.splice(index, 1);
+            }
+        }
+
+        notify() {
+            this.elements.forEach(element => {
+                element.change();
+            });
+        }
 
     }
 
     const themeObservable = new ThemeObservable();
 
     switchTheme.addEventListener('click', (e) => {
-      e.preventDefault();
-      isLight = !isLight;
-      html.setAttribute('data-theme', isLight ? 'dark' : 'light');
-      switchTheme.innerHTML = isLight ? sun : moon;
-      switchTheme.setAttribute('data-tooltip', `Tema ${isLight ? 'claro' : 'escuro'}`);
-      removeTooltip();
-      fetch(`/changeConfig/?tema=${isLight}`);
-      themeObservable.notify();
+        e.preventDefault();
+        isLight = !isLight;
+        html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+        switchTheme.innerHTML = isLight ? sun : moon;
+        switchTheme.setAttribute('data-tooltip', `Tema ${isLight ? 'claro' : 'escuro'}`);
+        removeTooltip();
+        fetch(`/changeConfig/?tema=${isLight}`);
+        themeObservable.notify();
 
     });
 
     const removeTooltip = (timeInt = 1750) => {
-      setTimeout(() => {
-        switchTheme.blur();
-      }, timeInt);
+        setTimeout(() => {
+            switchTheme.blur();
+        }, timeInt);
     };
+
+    let exitButton = document.querySelectorAll("#exitButton");
+    exitButton.forEach(item => item.addEventListener("click", ()=>{
+        item.closest("form").submit();
+    }));
+        
 </script>
 {% if user.is_authenticated %}
-<script>
-  const changeUserDataForm = document.getElementById('changeUserDataForm');
-  changeUserDataForm.addEventListener("submit", (event)=>{
-    event.preventDefault();
+    <script>
+        const changeUserDataForm = document.getElementById('changeUserDataForm');
+        changeUserDataForm.addEventListener("submit", (event) => {
+            event.preventDefault();
 
-    let usernameInput = changeUserDataForm.querySelector("input[name='username']");
-    fetch(`/changeUserData/?username=${usernameInput.value}`).then(res=>res.json()).then((data)=>{
-      let errorList = changeUserDataForm.querySelector(".errorList");
+            let usernameInput = changeUserDataForm.querySelector("input[name='username']");
+            fetch(`/changeUserData/?username=${usernameInput.value}`).then(res => res.json()).then((data) => {
+                let errorList = changeUserDataForm.querySelector(".errorList");
 
-      if (data.success){
-        errorList.style.display = 'none';
-        document.querySelectorAll('.currentUsername').forEach((item)=>{item.textContent = data.username})
+                if (data.success) {
+                    errorList.style.display = 'none';
+                    document.querySelectorAll('.currentUsername').forEach((item) => {
+                        item.textContent = data.username
+                    })
 
-        let notifications = document.getElementById('notifications');
-        let headerNotifications = notifications.querySelector('.header');
+                    let notifications = document.getElementById('notifications');
+                    let headerNotifications = notifications.querySelector('.header');
 
-        notifications.innerHTML = '';
+                    notifications.innerHTML = '';
 
-        notifications.innerHTML = `<div style="color: green;">${data.success}</div>`;
-        notifications.insertBefore(headerNotifications, notifications.children[0]);
+                    notifications.innerHTML = `<div style="color: green;">${data.success}</div>`;
+                    notifications.insertBefore(headerNotifications, notifications.children[0]);
 
-        notifications.style.display = 'block';        
-        usernameInput.value = '';
+                    notifications.style.display = 'block';
+                    usernameInput.value = '';
 
-        setTimeout(() => {
-          notifications.style.display = "none";
-        }, 5000);
+                    setTimeout(() => {
+                        notifications.style.display = "none";
+                    }, 5000);
 
-      }else{
-        errorList.innerHTML = '';
-        errorList.style.display = 'inherit';
+                } else {
+                    errorList.innerHTML = '';
+                    errorList.style.display = 'inherit';
 
-        data.warning.forEach((item)=>{
-          let error = document.createElement('div');
-          error.innerHTML = item;
+                    data.warning.forEach((item) => {
+                        let error = document.createElement('div');
+                        error.innerHTML = item;
 
-          errorList.appendChild(error);
+                        errorList.appendChild(error);
+                    })
+                }
+            })
         })
-      }
-    })
-  })
-</script>
+    </script>
 {% endif %}
 {% block extra_body %}
 {% endblock extra_body %}

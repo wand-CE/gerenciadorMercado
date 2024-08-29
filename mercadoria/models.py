@@ -74,7 +74,7 @@ class Cliente(Pessoa):
         return dicionario
 
 
-class Vendedor(User):
+class Vendedor(User, models.Model):
     cpf = models.CharField(null=False, unique=True,
                            validators=[MinLengthValidator(11), RegexValidator(r'^\d{11}$',
                                                                               'CPF inválido')],

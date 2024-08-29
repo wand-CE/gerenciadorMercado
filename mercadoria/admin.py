@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from mercadoria.models import Categoria, Produto, Cliente, Vendedor, Compra, ItemCompra
 
@@ -23,14 +25,33 @@ class ClienteAdmin(admin.ModelAdmin):
     list_display = ['cpf', 'nome', 'endereco', 'nascimento']
 
 
-@admin.register(Vendedor)
-class VendedorAdmin(admin.ModelAdmin):
-    list_display = ['cpf', 'username']
+class VendedorCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = Vendedor
+        fields = ('username', 'cpf', 'first_name', 'last_name', 'email', 'endereco', 'nascimento')
 
+
+class VendedorChangeForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = Vendedor
+        fields = ('username', 'cpf', 'first_name', 'last_name', 'email', 'endereco', 'nascimento')
+
+
+@admin.register(Vendedor)
+class VendedorAdmin(DefaultUserAdmin):
+    form = VendedorChangeForm
+    add_form = VendedorCreationForm
+
+    list_display = ['cpf', 'username']
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Informações Pessoais', {'fields': (
             'first_name', 'last_name', 'email', 'cpf', 'nascimento', 'endereco')}),
+    )
+    add_fieldsets = (
+        (None, {'classes': ('wide',),
+                'fields': ('username', 'password1', 'password2', 'cpf', 'first_name', 'last_name', 'email', 'endereco',
+                           'nascimento')}),
     )
 
 

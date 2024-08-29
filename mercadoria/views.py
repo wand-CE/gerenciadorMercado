@@ -4,7 +4,7 @@ import json
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.core.validators import RegexValidator
 from django.db import transaction
 from django.db.models.functions import ExtractMonth, ExtractYear
@@ -24,7 +24,12 @@ class ConfiguracoesMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tema'] = Configuracoes.objects.first().temaEscuro
+        configuracoes = Configuracoes.objects.first()
+        if not configuracoes:
+            configuracoes = Configuracoes.objects.create()
+
+        context['tema'] = configuracoes.temaEscuro
+
         return context
 
 
@@ -79,6 +84,19 @@ class LoginUserView(ConfiguracoesMixin, LoginView):
             messages.error(self.request, f'Você já está logado como {usuario}')
             return redirect('home')
         return super().form_invalid(form)
+
+
+class LogoutUserView(LogoutView):
+    template_name = "registration/logged_out.html"
+    next_page = reverse_lazy('loginVendedor')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            response = super().dispatch(request, *args, **kwargs)
+            messages.success(request, 'Você foi deslogado!!!')
+            return response
+        else:
+            return redirect(self.next_page)
 
 
 class Home(ConfiguracoesMixin, TemplateView):
@@ -425,8 +443,8 @@ class CreateClienteJson(LoginRequiredMixin, View):
         if form.is_valid():
             cliente = form.save()
             return JsonResponse({'nome': f'{cliente}', 'cliente_id': cliente.id})
-        else:
-            return JsonResponse({'errors': form.errors})
+
+        return JsonResponse({'errors': form.errors})
 
 
 class SearchProducts(LoginRequiredMixin, View):
@@ -480,12 +498,12 @@ class GenerateReportsView(LoginRequiredMixin, View):
             dateEnd = request.get('dateEnd', None)
 
             if periodo == 'range' and dateInit and dateEnd:
-                objetosItemCompra = ItemCompra.objects.filter(
+                objetos_item_compra = ItemCompra.objects.filter(
                     compra__horaCompra__range=[*sorted([dateInit, dateEnd])])
             else:
-                objetosItemCompra = ItemCompra.objects
+                objetos_item_compra = ItemCompra.objects
 
-            result = eval(f'self.por_{tipo}(objetosItemCompra, ordem)')
+            result = eval(f'self.por_{tipo}(objetos_item_compra, ordem)')
 
             graphic_title = ''
 

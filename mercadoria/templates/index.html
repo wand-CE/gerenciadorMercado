@@ -1,49 +1,52 @@
 {% extends 'base.html' %}
 {% block conteudo %}
-<article>
-    <h3>Painel principal</h3>    
+    <article>
+        <h3>Painel principal</h3>
         <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-          <article>
-            <h4>Visão geral de vendas</h4>
-            {% if totaisVendidos %}
-            <p>Quantidade vendida: {{ totaisVendidos.quantidadeTotal }}</p>
-            <p style="flex-wrap: nowrap;">Total Vendido: R$<span id="totalVendido">{{ totaisVendidos.precoVendido }}</span></p>
-            {% else %}
-            <p>Quantidade vendida: 0</p>
-            <p>Total Vendido: R$0,00</p>
+            <article>
+                <h4>Visão geral de vendas</h4>
+                {% if totaisVendidos.quantidadeTotal > 0 %}
+                    <p>Quantidade vendida: {{ totaisVendidos.quantidadeTotal }}</p>
+                    <p style="flex-wrap: nowrap;">Total Vendido: R$<span
+                            id="totalVendido">{{ totaisVendidos.precoVendido }}</span></p>
+                {% else %}
+                    <p>Quantidade vendida: 0</p>
+                    <p>Total Vendido: R$0,00</p>
+                {% endif %}
+            </article>
+
+            <article>
+                <h3>Produtos em falta</h3>
+                <div style="overflow: auto; max-height: 200px;">
+                    {% for p in em_falta %}
+                        <a href="{% url 'editarProduto' p.id %}">-{{ p }}</a>
+                        <br>
+                    {% empty %}
+                        Nenhum produto em falta!!!
+                    {% endfor %}
+                </div>
+            </article>
+            {% if user.is_authenticated %}
+                <article>
+                    <h3>Logado como</h3>
+                    <div style="display: flex; align-items: center; color: var(--primary);--color: var(--primary);">
+                        {{ user|title }}
+                        <form method="post" action="{% url 'logoutVendedor' %}" style="display: contents; margin-left: 10px;">
+                            {% csrf_token %}
+                            <i class="bi bi-box-arrow-in-right" style="font-size: xx-large" id="exitButton"></i>
+                        </form>
+                    </div>
+                </article>
             {% endif %}
-          </article>
-    
-          <article>
-            <h3>Produtos em falta</h3>
-            <div style="overflow: auto; max-height: 200px;">
-            {% for p in em_falta %}
-            <a href="{% url 'editarProduto' p.id %}">-{{ p }}</a>
-            <br>
-            {% empty %}
-            Nenhum produto em falta!!!
-            {% endfor%}
-            </div>
-          </article>
-          {% if user.is_authenticated%}
-          <article>            
-            <h3>Logado como</h3>
-            <a>{{ user|title }}</a>
-            <a href="{% url 'logoutVendedor' %}?next=/" data-tooltip="Sair">
-                <i class="bi bi-box-arrow-in-right"
-                style="font-size: xx-large"></i>
-            </a>
-          </article>
-          {% endif %}
         </div>
-</article>
+    </article>
 {% endblock conteudo %}
 {% block extra_body %}
-<script>
-  let totalVendido = document.getElementById('totalVendido');
-  let takeCents = totalVendido.textContent.split(",");
-  takeCents[0] = takeCents[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    <script>
+        let totalVendido = document.getElementById('totalVendido');
+        let takeCents = totalVendido.textContent.split(",");
+        takeCents[0] = takeCents[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
-  totalVendido.textContent = takeCents.join(',')  
-</script>
+        totalVendido.textContent = takeCents.join(',')
+    </script>
 {% endblock extra_body %}

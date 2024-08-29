@@ -1,5 +1,5 @@
 .idea
-venv
+*venv
 migrations
 .env
 __pycache__
